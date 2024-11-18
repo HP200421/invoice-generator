@@ -1,4 +1,4 @@
-import { PdfView } from "@react-pdf/renderer";
+import { View as PdfView } from "@react-pdf/renderer";
 import compose from "../styles/compose";
 
 const View = ({ className, pdfMode, children }) => {
