@@ -1,35 +1,48 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState, useEffect } from "react";
+import InvoicePage from "./components/InvoicePage";
+import { InvoiceSchema } from "./utils/validationSchema";
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    const savedInvoice = window.localStorage.getItem("invoiceData");
+    if (savedInvoice) {
+      try {
+        const parsedInvoice = JSON.parse(savedInvoice);
+        InvoiceSchema.validate(parsedInvoice)
+          .then((validInvoice) => {
+            setData(validInvoice); // Set valid data to state
+          })
+          .catch((error) => {
+            console.error("Invalid invoice data:", error);
+          });
+      } catch (error) {
+        console.error("Error parsing invoice from localStorage:", error);
+      }
+    }
+  }, []);
+
+  const onInvoiceUpdated = (invoice) => {
+    InvoiceSchema.validate(invoice)
+      .then((validInvoice) => {
+        setData(validInvoice); // Update state with valid data
+        window.localStorage.setItem(
+          "invoiceData",
+          JSON.stringify(validInvoice)
+        ); // Save to localStorage
+      })
+      .catch((error) => {
+        console.error("Validation failed:", error);
+      });
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div className="app">
+      <h2 className="center">Touchmedia Ads Powered Invoice Generator</h2>
+      <InvoicePage data={data} onChange={onInvoiceUpdated} />
+    </div>
+  );
+};
 
-export default App
+export default App;
